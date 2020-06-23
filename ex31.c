@@ -1,14 +1,13 @@
-// Yael Simhis - 209009604
-
+// Yael Simhis - 209009604 LATE-SUBMISSION
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/fcntl.h>
 #include <unistd.h>
 #include <fcntl.h>
 
+// get half of the length
 size_t getHalf(size_t len) {
     if (len % 2 == 0) {
         return len / 2;
@@ -17,49 +16,92 @@ size_t getHalf(size_t len) {
     }
 }
 
-
+// count how many similar char in the compared files
 size_t countSimilarChars(int file1, int file2, size_t firstLen, size_t secondLen,
-                          size_t offset1, size_t offset2) {
-    char file1Char[1], file2Char[1];
+                         size_t offset1, size_t offset2) {
+    char file1Char, file2Char;
     size_t fullOffset = 0, count = 0;
     int readChar;
 
-    lseek(file1, offset1, SEEK_SET);
-    lseek(file2, offset2, SEEK_SET);
+    // start to read the file from the wanted char
+    if (lseek(file1, offset1, SEEK_SET) < 0) {
+        fprintf(stderr, "Failed To Call lseek()\n");
+        exit(-1);
+    }
+    if (lseek(file2, offset2, SEEK_SET)< 0) {
+        fprintf(stderr, "Failed To Call lseek()\n");
+        exit(-1);
+    }
 
     // loop to count how many chars in the file are identical
-    while (fullOffset < firstLen && fullOffset < secondLen) {
+    while ((fullOffset < firstLen) && (fullOffset < secondLen)) {
         // read one char every time
-        readChar = read(file1, file1Char, 1);
+        readChar = read(file1, &file1Char, 1);
+        if (readChar < 0) {
+            fprintf(stderr, "Failed in reading\n");
+            exit(-1);
+        }
         if (readChar != 1) {
             break;
         }
-        readChar = read(file2, file2Char, 1);
+
+        readChar = read(file2, &file2Char, 1);
+        if (readChar < 0) {
+            fprintf(stderr, "Failed in reading\n");
+            exit(-1);
+        }
         if (readChar != 1) {
             break;
         }
 
         // identical char
-        if (*file1Char == *file2Char && *file1Char != '\n' && *file2Char != '\n') {
+        if (file1Char == file2Char) {
             count++;
         }
 
         fullOffset++;
     }
+
     return count;
 }
 
+// compare the files and return 1 if the files are identical, 2 if they different and 3 if similar
 int compareFiles(char *firstFile, char *secondFile) {
     bool identical = false, similar = false;
     size_t countSimilar, i, j;
 
     // open the files
     int file1 = open(firstFile, O_RDONLY);
+    if (file1 < 0) {
+        perror("Error in opening file\n");
+        return -1;
+    }
     int file2 = open(secondFile, O_RDONLY);
+    if (file2 < 0) {
+        perror("Error in opening file\n");
+        return -1;
+    }
 
-    // len without "\n"
-    size_t firstLen = lseek(file1, 0, SEEK_END) - 1;
-    size_t secondLen = lseek(file2, 0, SEEK_END) - 1;
+    // get the len of the files
+    size_t firstLen = lseek(file1, 0, SEEK_END);
+    if (firstLen < 0) {
+        fprintf(stderr, "Failed To Call lseek\n");
+        exit(-1);
+    }
+    if (lseek(file1, 0, SEEK_SET) < 0) {
+        fprintf(stderr, "Failed To Call lseek\n");
+        exit(-1);
+    }
+
+    size_t secondLen = lseek(file2, 0, SEEK_END);
+    if (secondLen < 0) {
+        fprintf(stderr, "Failed To Call lseek\n");
+        exit(-1);
+    }
+    if (lseek(file1, 0, SEEK_SET) < 0) {
+        fprintf(stderr, "Failed To Call lseek\n");
+        exit(-1);
+    }
 
     // get half size
     size_t halfFirstLen = getHalf(firstLen);

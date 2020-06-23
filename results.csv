@@ -1,0 +1,6 @@
+Exellent gets 100,EXCELLENT,100
+TIMEOUT gets 20,TIMEOUT,20
+Similar output gets 75,SIMILAR,75
+Wrong output gets 50,WRONG,50
+NO C FILE gets 0,NO_C_FILE,0
+Compilation Error gets 10,COMPILATION_ERROR,10
